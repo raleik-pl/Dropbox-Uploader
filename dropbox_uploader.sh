@@ -865,6 +865,7 @@ function db_download_file
     if [[ $TYPE != "ERR" ]]; then
         sha_src=$(db_sha "$FILE_SRC")
         sha_dst=$(db_sha_local "$FILE_DST")
+        print " sha_src: $sha_src / sha_dst: $sha_dst"
         if [[ $sha_src == $sha_dst && $sha_src != "ERR" ]]; then
             print "> Skipping file \"$FILE_SRC\", file exists with the same hash\n"
             return
