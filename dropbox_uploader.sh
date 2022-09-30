@@ -1530,31 +1530,19 @@ function db_sha_local
     local SKIP=0
     local SHA_CONCAT=""
 
-    which shasum > /dev/null
+    which sha256sum > /dev/null
     if [[ $? != 0 ]]; then
         echo "ERR"
         return
     fi
-
-    while ([[ $OFFSET -lt "$FILE_SIZE" ]]); do
-        dd if="$FILE" of="$CHUNK_FILE" bs=4194304 skip=$SKIP count=1 2> /dev/null
-        local SHA=$(shasum -a 256 "$CHUNK_FILE" | awk '{print $1}')
-        SHA_CONCAT="${SHA_CONCAT}${SHA}"
-
-        let OFFSET=$OFFSET+4194304
-        let SKIP=$SKIP+1
-    done
-
-    if [[ "`uname -s`" = "Darwin" ]]
-    then
-    		# sed for macOS will give an error "bad flag in substitute command: 'I'"
-    		# when using the original syntax. This option works instead.
-		shaHex=$(echo $SHA_CONCAT | sed 's/\([0-9A-Fa-f]\{2\}\)/\\x\1/g')
+    
+    if [[ -e "$FILE" ]]; then
+        SHASHA=$(sha256sum "$FILE" | awk '{print $1}' | sed 's/\([0-9A-F]\{2\}\)/\\x\1/gI')
+        SHA=$(echo -ne "$SHASHA" | sha256sum | awk '{print $1}')
+        echo $SHA
     else
-	    shaHex=$(echo $SHA_CONCAT | sed 's/\([0-9A-F]\{2\}\)/\\x\1/gI')
-	fi
-
-    echo -ne $shaHex | shasum -a 256 | awk '{print $1}'
+        echo -n "new file"
+    fi
 }
 
 ################
